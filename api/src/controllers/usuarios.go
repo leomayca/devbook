@@ -5,6 +5,7 @@ import (
 	"api/src/modelos"
 	"api/src/repositories"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -28,9 +29,12 @@ func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	repositorio := repositories.NovoRepositorioDeUsuarios(db)
-	repositorio.Criar(usuario)
+	usuarioID, erro := repositorio.Criar(usuario)
+	if erro != nil {
+		log.Fatal(erro)
+	}
 
-	w.Write([]byte("Criando usuário!"))
+	w.Write([]byte(fmt.Sprintf("ID inserido: %d", usuarioID)))
 }
 
 // BuscarUsuarios busca todos os usuários no banco de dados
