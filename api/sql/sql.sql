@@ -1,6 +1,9 @@
 CREATE DATABASE IF NOT EXISTS devbook;
 USE devbook;
 
+GRANT ALL PRIVILEGES ON devbook.* TO 'devbook'@'%';
+FLUSH PRIVILEGES;
+
 DROP TABLE IF EXISTS usuarios;
 
 CREATE TABLE usuarios(
