@@ -13,6 +13,9 @@ var (
 	// StringConexaoBanco é a string de conexão com o MySQL
 	StringConexaoBanco = ""
 
+	// Host onde a API vai estar rodando
+	Host = ""
+
 	// Porta onde a API vai estar rodando
 	Porta = 0
 )
@@ -24,6 +27,8 @@ func Carregar() {
 	if erro = godotenv.Load(); erro != nil {
 		log.Fatal(erro)
 	}
+
+	Host = os.Getenv("API_HOST")
 
 	Porta, erro = strconv.Atoi(os.Getenv("API_PORT"))
 	if erro != nil {
