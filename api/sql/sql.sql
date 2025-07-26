@@ -24,3 +24,15 @@ CREATE TABLE seguidores(
     foreign key (usuario_id) references usuarios(id) on delete cascade,
     foreign key (seguidor_id) references usuarios(id) on delete cascade
 ) ENGINE=INNODB;
+
+DROP TABLE IF EXISTS publicacoes;
+
+CREATE TABLE publicacoes(
+    id int primary key auto_increment,
+    titulo varchar(50) not null,
+    conteudo varchar(300) not null,
+    autor_id int not null,
+    curtidas int default 0,
+    criadoEm timestamp default current_timestamp(),
+    foreign key (autor_id) references usuarios(id) on delete cascade
+) ENGINE=INNODB;
