@@ -1,10 +1,53 @@
 package controllers
 
-import "net/http"
+import (
+	"api/src/authentication"
+	"api/src/banco"
+	"api/src/modelos"
+	"api/src/repositories"
+	"api/src/respostas"
+	"encoding/json"
+	"io"
+	"net/http"
+)
 
 // CriarPublicacao adiciona uma nova publicação no banco de dados
 func CriarPublicacao(w http.ResponseWriter, r *http.Request) {
+	usuarioID, erro := authentication.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
 
+	corpoRequisicao, erro := io.ReadAll(r.Body)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnprocessableEntity, erro)
+		return
+	}
+
+	var publicacao modelos.Publicacao
+	if erro = json.Unmarshal(corpoRequisicao, &publicacao); erro != nil {
+		respostas.Erro(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	publicacao.AutorID = usuarioID
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repositories.NovoRepositorioDePublicacoes(db)
+	publicacao.ID, erro = repositorio.Criar(publicacao)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusCreated, publicacao)
 }
 
 // BuscarPublicacoes traz as publicações que apareceriam no feed do usuário
