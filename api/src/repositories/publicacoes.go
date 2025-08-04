@@ -69,3 +69,44 @@ func (repositorio Publicacoes) BuscarPorID(publicacaoID uint64) (modelos.Publica
 
 	return publicacao, nil
 }
+
+// Buscar traz as publicações dos usuários seguidos e também do próprio usuário que fez a requisição
+func (repositorio Publicacoes) Buscar(usuarioID uint64) ([]modelos.Publicacao, error) {
+	linhas, erro := repositorio.db.Query(`
+		select p.*, u.nick from publicacoes p
+		inner join usuarios u on u.id = p.autor_id
+		where p.autor_id = ?
+   			or p.autor_id in (
+       			select usuario_id from seguidores
+       			where seguidor_id = ?
+   			)
+		order by p.criadoEm desc`,
+		usuarioID, usuarioID,
+	)
+	if erro != nil {
+		return nil, erro
+	}
+	defer linhas.Close()
+
+	var publicacoes []modelos.Publicacao
+
+	for linhas.Next() {
+		var publicacao modelos.Publicacao
+
+		if erro = linhas.Scan(
+			&publicacao.ID,
+			&publicacao.Titulo,
+			&publicacao.Conteudo,
+			&publicacao.AutorID,
+			&publicacao.Curtidas,
+			&publicacao.CriadoEm,
+			&publicacao.AutorNick,
+		); erro != nil {
+			return nil, erro
+		}
+
+		publicacoes = append(publicacoes, publicacao)
+	}
+
+	return publicacoes, nil
+}
